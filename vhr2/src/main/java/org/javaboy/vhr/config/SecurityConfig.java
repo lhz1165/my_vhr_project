@@ -1,34 +1,40 @@
 package org.javaboy.vhr.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.javaboy.vhr.model.Hr;
+import org.javaboy.vhr.config.callback.*;
 import org.javaboy.vhr.model.RespBean;
 import org.javaboy.vhr.service.HrService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.*;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.PrintWriter;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private HrService hrService;
+
+    //需要什么角色
+    @Autowired
+    private MyFilter myFilter;
+
+    //用户有哪些角色
+    @Autowired
+    private MyDecisionManager decisionManager;
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -40,73 +46,46 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(hrService);
     }
 
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/css/**", "/js/**", "/index.html", "/img/**", "/fonts/**", "/favicon.ico", "/verifyCode");
+    }
+
+    @Bean
+    SessionRegistryImpl sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    LoginFilter loginFilter() throws Exception {
+        LoginFilter loginFilter = new LoginFilter();
+        loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
+        loginFilter.setAuthenticationFailureHandler(new LoginFaildHandler());
+        loginFilter.setAuthenticationManager(authenticationManagerBean());
+        loginFilter.setFilterProcessesUrl("/doLogin");
+        ConcurrentSessionControlAuthenticationStrategy sessionStrategy = new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry());
+        sessionStrategy.setMaximumSessions(1);
+        loginFilter.setSessionAuthenticationStrategy(sessionStrategy);
+        return loginFilter;
+    }
+
+
     /*登录成功或者失败返回json提示*/
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        //登录等处
         http.authorizeRequests()
-                .anyRequest().authenticated()//所有请求认证才可以试用
-                .and()
-                .formLogin()
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .loginProcessingUrl("/doLogin")
-                .loginPage("/login")//未登录返回的处理器
-                .successHandler(new AuthenticationSuccessHandler() {
-                    @Override
-                    public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse resp,
-                                                        Authentication authentication) throws IOException, ServletException {
-                        resp.setContentType("application/json;charset=utf-8");
-                        PrintWriter out = resp.getWriter();
-                        Hr hr = (Hr) authentication.getPrincipal();
-                        RespBean respBean = RespBean.ok("登录成功", hr);
-                        String s = new ObjectMapper().writeValueAsString(respBean);
-
-                        out.write(s);
-                        out.flush();
-                        out.close();
-                    }
-                })
-                .failureHandler(new AuthenticationFailureHandler() {
-                    @Override
-                    public void onAuthenticationFailure(HttpServletRequest req, HttpServletResponse resp, AuthenticationException e) throws IOException, ServletException {
-                        resp.setContentType("application/json;charset=utf-8");
-                        PrintWriter out = resp.getWriter();
-                        RespBean respBean = RespBean.error("登录失败");
-                        if (e instanceof LockedException) {
-                            respBean.setMsg("账号被锁");
-                        } else if (e instanceof CredentialsExpiredException){
-                            respBean.setMsg("密码过期");
-                        } else if (e instanceof AccountExpiredException) {
-                            respBean.setMsg("账户过期");
-                        } else if (e instanceof DisabledException) {
-                            respBean.setMsg("账户禁用");
-                        } else if (e instanceof BadCredentialsException) {
-                            respBean.setMsg("用户名或密码错误");
-                        }
-                        String s = new ObjectMapper().writeValueAsString(respBean);
-                        out.write(s);
-                        out.flush();
-                        out.close();
-                    }
-                }).permitAll()//所有接口都可以访问
-                .and()
-                .logout()
-                .logoutSuccessHandler(new LogoutSuccessHandler() {
-                    @Override
-                    public void onLogoutSuccess(HttpServletRequest req, HttpServletResponse resp, Authentication authentication) throws IOException, ServletException {
-                        resp.setContentType("application/json;charset=utf-8");
-                        PrintWriter out = resp.getWriter();
-                        out.write(new ObjectMapper().writeValueAsString(RespBean.ok("退出成功")));
-
-                        out.flush();
-                        out.close();
-
-                    }
-                })
-                .permitAll()
-                .and()
-                .csrf().disable();
-
+                //权限拦截器 代替下面的代码
+                .withObjectPostProcessor(new AuthenticationPostProcessor(myFilter,decisionManager))
+                .and().logout().logoutSuccessHandler(new LogoutSuccessHandler()).permitAll()
+                .and().csrf().disable()
+                //请求失败之后直接返回json提示
+                .exceptionHandling().authenticationEntryPoint(new LoginExceptionHandler());
+        //防止多人登录
+        http.addFilterAt(new ConcurrentSessionFilter(sessionRegistry(),new MySessionInformationExpiredStrategy()), ConcurrentSessionFilter.class);
+        //自定义json格式登录的实现
+        http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
+        //  12480
 
     }
 }

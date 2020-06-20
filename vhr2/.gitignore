@@ -1,0 +1,14 @@
+target/
+.class
+.idea/
+.DS_Store
+logs/
+.settings/
+.classpath
+.project
+*.iml
+/git
+temp/
+**/mall-hello-world-starter/
+mall-demo/
+**/test/
