@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author: lhz
@@ -21,7 +22,10 @@ public class AccessForbiddenHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest httpServletRequest, HttpServletResponse response, AccessDeniedException e) throws IOException, ServletException {
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         response.setStatus(HttpStatus.FORBIDDEN.value());
-        response.getWriter().write(new ObjectMapper().writeValueAsString(new RespBean(403,"权限不足",null)));
+        PrintWriter out = response.getWriter();
+        out.write(new ObjectMapper().writeValueAsString(new RespBean(403,"权限不足",null)));
+        out.flush();
+        out.close();
 
     }
 }

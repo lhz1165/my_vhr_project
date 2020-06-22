@@ -6,6 +6,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 
+import org.javaboy.vhr.model.Hr;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -47,7 +48,9 @@ public class SwaggerConfig  {
 				//为有@ApiOperation注解的方法生成API文档
 				.apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
 				.paths(PathSelectors.any())
+				// 隐藏自动注入的用户实体类
 				.build()
+				.ignoredParameterTypes(Hr.class)
 				.apiInfo(apiInfo());
 
 	}
