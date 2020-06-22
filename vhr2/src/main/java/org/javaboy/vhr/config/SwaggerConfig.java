@@ -38,16 +38,6 @@ import java.util.List;
 public class SwaggerConfig  {
 	@Bean
 	public Docket createRestApi(){
-//		ParameterBuilder builder = new ParameterBuilder();
-//		List<Parameter> parameters = new ArrayList<>();
-//		builder.name("Cookie")
-//				.description("cookie")
-//				.modelRef(new ModelRef("string"))
-//				.parameterType("cookie")
-//				.required(true)
-//				.build();
-//		parameters.add(builder.build());
-
 		return new Docket(DocumentationType.SWAGGER_2)
 				.select()
 				//为当前包下controller生成API文档
@@ -58,7 +48,6 @@ public class SwaggerConfig  {
 				.apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
 				.paths(PathSelectors.any())
 				.build()
-				//.globalOperationParameters(parameters)
 				.apiInfo(apiInfo());
 
 	}

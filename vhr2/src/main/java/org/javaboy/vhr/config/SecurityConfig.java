@@ -6,6 +6,7 @@ import org.javaboy.vhr.service.HrService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -62,8 +63,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		LoginFilter loginFilter = new LoginFilter();
 		loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
 		loginFilter.setAuthenticationFailureHandler(new LoginFaildHandler());
-		loginFilter.setAuthenticationManager(authenticationManagerBean());
-		loginFilter.setFilterProcessesUrl("/doLogin");
+		loginFilter.setAuthenticationManager(authenticationManagerBean());//必须指定
+		loginFilter.setFilterProcessesUrl("/doLogin2");                   //必须指定
 		ConcurrentSessionControlAuthenticationStrategy sessionStrategy = new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry());
 		sessionStrategy.setMaximumSessions(1);
 		loginFilter.setSessionAuthenticationStrategy(sessionStrategy);
@@ -89,4 +90,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		//  12480
 
 	}
+	@Override
+	@Bean
+	//注入authenticationManager
+	protected AuthenticationManager authenticationManager() throws Exception {
+		return super.authenticationManager();
+	}
+
+
 }

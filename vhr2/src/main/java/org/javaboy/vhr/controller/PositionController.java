@@ -1,6 +1,7 @@
 package org.javaboy.vhr.controller;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.javaboy.vhr.model.Position;
 import org.javaboy.vhr.model.RespBean;
 import org.javaboy.vhr.service.PositionService;
@@ -19,10 +20,14 @@ import java.util.List;
 public class PositionController {
 	@Autowired
 	PositionService positionService;
+
+	@ApiOperation("查询职位")
 	@GetMapping("/positions")
 	public List<Position> getAllPositions() {
 		return positionService.getAllPositions();
 	}
+
+	@ApiOperation("增加职位")
 	@PostMapping("/position")
 	public RespBean addPosition(@RequestBody Position position) {
 		if (positionService.addPosition(position) == 1) {
