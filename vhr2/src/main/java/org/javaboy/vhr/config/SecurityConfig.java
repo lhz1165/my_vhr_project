@@ -64,7 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		loginFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler());
 		loginFilter.setAuthenticationFailureHandler(new LoginFaildHandler());
 		loginFilter.setAuthenticationManager(authenticationManagerBean());//必须指定
-		loginFilter.setFilterProcessesUrl("/doLogin2");                   //必须指定
+		loginFilter.setFilterProcessesUrl("/doLogin");                   //必须指定
 		ConcurrentSessionControlAuthenticationStrategy sessionStrategy = new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry());
 		sessionStrategy.setMaximumSessions(1);
 		loginFilter.setSessionAuthenticationStrategy(sessionStrategy);

@@ -26,4 +26,15 @@ public class PositionService {
 		position.setCreateDate(new Date());
 		return positionMapper.insertSelective(position);
 	}
+	public Integer updatePositions(Position position) {
+		return positionMapper.updateByPrimaryKeySelective(position);
+	}
+
+	public Integer deletePositionById(Integer id) {
+		return positionMapper.deleteByPrimaryKey(id);
+	}
+
+	public Integer deletePositionsByIds(Integer[] ids) {
+		return positionMapper.deletePositionsByIds(ids);
+	}
 }
