@@ -82,7 +82,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.and().logout().logoutSuccessHandler(new LogoutSuccessHandler()).permitAll()
 				.and().csrf().disable()
 				//请求失败之后直接返回json提示
-				.exceptionHandling().authenticationEntryPoint(new LoginExceptionHandler());
+				.exceptionHandling()
+				.authenticationEntryPoint(new LoginExceptionHandler())
+				.accessDeniedHandler(new AccessForbiddenHandler());
 		//防止多人登录
 		http.addFilterAt(new ConcurrentSessionFilter(sessionRegistry(), new MySessionInformationExpiredStrategy()), ConcurrentSessionFilter.class);
 		//自定义json格式登录的实现
