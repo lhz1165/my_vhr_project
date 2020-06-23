@@ -1,12 +1,16 @@
 package org.javaboy.vhr.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
-
+@ApiModel("岗位")
 public class Position implements Serializable {
+    @JsonIgnore
     private Integer id;
 
     @Override
@@ -31,12 +35,13 @@ public class Position implements Serializable {
 
         this.name = name;
     }
-
+    @ApiModelProperty(value = "岗位名",example = "--")
     private String name;
 
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "Asia/Shanghai")
+    @JsonIgnore
     private Date createDate;
-
+    @JsonIgnore
     private Boolean enabled;
 
     public Integer getId() {

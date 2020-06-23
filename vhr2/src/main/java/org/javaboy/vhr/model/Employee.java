@@ -1,13 +1,19 @@
 package org.javaboy.vhr.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.Serializable;
 import java.util.Date;
 
+@ApiModel("岗位")
 public class Employee implements Serializable {
-    private Integer id;
 
+    private Integer id;
+    @ApiModelProperty(value = "岗位名",example ="")
     private String name;
 
     private String gender;
@@ -50,6 +56,7 @@ public class Employee implements Serializable {
                 ", position=" + position +
                 '}';
     }
+
 
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "Asia/Shanghai")
     private Date birthday;
