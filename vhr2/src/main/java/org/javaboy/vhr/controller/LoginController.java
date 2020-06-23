@@ -33,7 +33,7 @@ public class LoginController {
      * @return
      */
     @ApiOperation("登录接口")
-    @PostMapping("/doLogin2")
+    @PostMapping("/doLogin")
     public RespBean login(@RequestBody LoginRequest loginRequest) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
         Authentication authentication = authenticationManager.authenticate(token);

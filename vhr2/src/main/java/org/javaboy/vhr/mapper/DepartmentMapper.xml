@@ -31,6 +31,7 @@
     <select id="getAllDepartmentsByParentId" resultMap="DepartmentWithChildren">
     select * from department where parentId=#{pid};
   </select>
+
     <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
         select
         <include refid="Base_Column_List"/>
